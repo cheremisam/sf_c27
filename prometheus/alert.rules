@@ -1,0 +1,43 @@
+groups: 
+- name: Prometheus
+  rules:
+  - alert: PrometheusTargetMissing
+    expr: up == 0
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Prometheus target missing (instance {{ $labels.instance }})"
+      description: "A Prometheus target has disappeared. An exporter might be crashed. VALUE = {{ $value }}  LABELS: {{ $labels }}"
+
+- name: Server
+  rules:
+  - alert: ServerRestart
+    expr: (time() - node_boot_time_seconds) <= 300
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Server restart"
+      description: "Uptime servers < 5 minutes"
+      value_str: "Uptime: {{ $value }}" 
+
+- name: http
+  rules:
+  - alert: Duration-over-5sec
+    expr: probe_duration_seconds > 5
+    for: 0m
+    labels:
+      severity: high
+    annotations:
+      summary: "Probe_duration_seconds (instance {{ $labels.instance }})"
+      description: "Probe_duration_seconds  VALUE = {{ $value }}  LABELS: {{ $labels }}"
+  - alert: http-200-fail
+    expr: probe_http_status_code != 200
+    for: 1m
+    labels:
+      severity: high
+    annotations:
+      summary: "HTTP 200 Fail"
+      description: "HTTP status code other than \"200\" has been returned"
+      value_str: "HTTP STATUS:{{ $value }}"
